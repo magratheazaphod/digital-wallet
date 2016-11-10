@@ -1,2 +1,4 @@
 paymo_input/*
+insight_testsuite/temp
+insight_testsuite/results.txt
 .ipynb*
