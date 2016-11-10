@@ -10,6 +10,7 @@
 #calculate right off the bat.
 
 import numpy as np
+import time
 
 class User:
     
@@ -36,6 +37,11 @@ def find_new_friends(user_list, current_user, new_tier):
         print('Function only works if there are at least some pre-existing friends (choose higher tier)')
         return
     
+    #check if there are any friends in the preceding tier - otherwise, may be filling in wrong order
+    if not current_user.friends[new_tier-1]:
+        print('No friends in previous tier. Have you filled previous tier of friends yet?')
+        return
+    
     #we have to pool together all existing first-degree friends, second-degree, etc.
     #by initializing existing_friends with the user themselves, avoid ever adding them to new_friends
     existing_friends = [current_user.user_id] 
@@ -47,7 +53,7 @@ def find_new_friends(user_list, current_user, new_tier):
     tentative_new = []
     
     #for each user who is currently a friend of degree new_tier-1, add all of their first-degree friends to tentative_new
-    for friend_id in current_user.friends:
+    for friend_id in current_user.friends[new_tier-1]:
         tentative_new += user_list[friend_id].friends[1] 
     
     tentative_new = list(np.unique(tentative_new)) #get rid of duplicates
