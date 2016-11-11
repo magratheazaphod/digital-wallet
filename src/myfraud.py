@@ -21,6 +21,7 @@ stream_file = 'stream_payment.csv'
 batch_path = input_dir + batch_file
 stream_path = input_dir + stream_file
 
+
 ## first hurdle - PayMo messages can include commas, and therefore using pandas csv_read fails due to inconsistent number of columns.
 ## current compromise is to use DictReader instead, which truncates Message at first comma
 ## best solution likely involves regular expressions, but not analyzing messages for the time being anyway
@@ -54,6 +55,7 @@ receivers = df_batch.groupby('id2')
 partners_1 = {}
 partners_2 = {}
 
+
 ## find all transactions where user <user_id> was giver, then find list of partners in those transactions
 for user_id,transactions in givers:
     
@@ -83,7 +85,8 @@ user_list_2 = np.array(list(partners_2.keys()))
 user_list = np.unique(np.concatenate([user_list_1,user_list_2]))
 
 
-
+## important - following stores all of our information about each user
+# stored as a dictionary of User types (defined in user_class.py)
 user_master_list = {}
 
 #cycle through all users and agglomerate partners from all transactions
@@ -107,6 +110,7 @@ for user_id in user_list:
 #this is the most labor-intensive part of the program, unsurprisingly - n=2 takes 2 minutes on my macbook pro
 
 #unfortunately, n=3 and n=4 are highly memory intensive...couldn't get them to work consistently
+#change tier_depth to 3 or 4 for deeper friend networks...
 tier_depth = 2
 
 #successively add tiers of friendship to every user in user_master_list
@@ -182,7 +186,9 @@ def test2(id1,id2):
     
     return 'unverified'
     
-#third test - is the transaction partner at least a 4th degree connection?    
+#third test - is the transaction partner at least a 4th degree connection?
+#even though fourth degree networks weren't successfully implemented yet,
+#the program has been designed to work if they are    
 def test3(id1,id2):
     
     if type(id1)==str and type(id2)==str:
@@ -229,6 +235,7 @@ with open(stream_path, newline='') as csvfile:
 df_stream = pd.DataFrame.from_dict(stream_dict)
 df_stream = df_stream[['time','id1','id2','amount','message']]
 
+
 ## create output columns
 ## I found that pandas started to slow down drastically when trying to calculate over 1,000,000
 ## entries at a time...hence broken into pieces
@@ -259,6 +266,7 @@ df_stream['test3'] = pd.concat([test3_a, test3_b, test3_c])
 
 print('Test 3 results:')
 print(df_stream['test3'].value_counts())
+
 
 ## OUTPUT TO TEXT FILE ## 
 input_dir = 'paymo_output/'
