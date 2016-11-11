@@ -15,7 +15,7 @@ import numpy as np
 from user_class import User, find_new_friends
 
 ## Paths to data files
-input_dir = '../paymo_input/'
+input_dir = 'paymo_input/'
 batch_file = 'batch_payment.csv'
 stream_file = 'stream_payment.csv'
 batch_path = input_dir + batch_file

@@ -1,4 +1,4 @@
-ncluded as part of Jesse Day's solution to digital-wallet, November 10th, 2016.
+#Included as part of Jesse Day's solution to digital-wallet, November 10th, 2016.
 
 #Given a particular user, two things are useful to keep track of:
 #1) A list of all other users who are nth-degree acquaintances;
