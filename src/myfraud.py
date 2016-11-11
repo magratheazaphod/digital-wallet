@@ -22,31 +22,29 @@ batch_path = input_dir + batch_file
 stream_path = input_dir + stream_file
 
 
-## first hurdle - PayMo messages can include commas, and therefore using pandas csv_read fails due to inconsistent number of columns.
-## current compromise is to use DictReader instead, which truncates Message at first comma
-## best solution likely involves regular expressions, but not analyzing messages for the time being anyway
+## Difficult to parse messages section because it's possible for it to use commas
+## Below, figured out solution - import raw string, then use regular expressions to pick out each component
+## we choose everything after the fourth comma to be the message
+batch_raw = []
 
-#takes about 30 seconds to load the 3 million lines each of batch_payment and stream_payment on my macbook pro.
-print('Loading batch_payment.csv into Pandas...')
-
-batch_dict = {}
-batch_dict['time'] = {}
-batch_dict['id1'] = {}
-batch_dict['id2'] = {}
-batch_dict['amount'] = {}
-batch_dict['message'] = {}
-
-with open(batch_path) as csvfile:
-    reader = csv.DictReader(csvfile)
-    for i, row in enumerate(reader):
-        batch_dict['time'][i] = row['time']
-        batch_dict['id1'][i] = row[' id1']
-        batch_dict['id2'][i] = row[' id2']
-        batch_dict['amount'][i] = row[' amount']
-        batch_dict['message'][i] = row[' message']
+with open(batch_path, newline='') as csvfile:
+    for line in csvfile:
+        batch_raw.append(line.strip())
         
-df_batch = pd.DataFrame.from_dict(batch_dict)
-df_batch = df_batch[['time','id1','id2','amount','message']]
+df_batch = pd.DataFrame(batch_raw, columns = ['raw'])
+
+## USE REGEX to parse out - everything before first comma is time, second comma is id1 and so on
+## able to pick up messages with commas in them since it picks up all leftover characters at end of line
+df_batch['time'] = df_batch['raw'].str.extract('^(.+?),', expand=True)
+df_batch['id1'] = df_batch['raw'].str.extract('^[^,]*,([^,]*),', expand=True)
+df_batch['id2'] = df_batch['raw'].str.extract('^[^,]*,[^,]*,([^,]*),', expand=True)
+df_batch['amount'] = df_batch['raw'].str.extract('^[^,]*,[^,]*,[^,]*,([^,]*),', expand=True)
+df_batch['message'] = df_batch['raw'].str.extract('^[^,]*,[^,]*,[^,]*,[^,]*,(.*$)', expand=True)
+
+#can get rid of raw data now that we've parsed everything
+df_batch = df_batch.drop('raw', 1)
+df_batch = df_batch.drop(0, 0) #drop header row
+
 
 #for convenience, let's call the id1 users 'givers' and id2 users 'receivers'
 #strategy is to use the pandas groupby command to obtain list of all partners in transactions where <user_id> is giver
@@ -220,26 +218,28 @@ def test3(id1,id2):
     return 'unverified'
 
 ## Now load in second data set - this time we choose to flag transactions as verified or unverified.
+## again, using regular expressions to parse from raw data.
 print('Loading stream_payment.csv into Pandas...')
 
-stream_dict = {}
-stream_dict['time'] = {}
-stream_dict['id1'] = {}
-stream_dict['id2'] = {}
-stream_dict['amount'] = {}
-stream_dict['message'] = {}
+stream_raw = []
 
 with open(stream_path, newline='') as csvfile:
-    reader = csv.DictReader(csvfile)
-    for i, row in enumerate(reader):
-        stream_dict['time'][i] = row['time']
-        stream_dict['id1'][i] = row[' id1']
-        stream_dict['id2'][i] = row[' id2']
-        stream_dict['amount'][i] = row[' amount']
-        stream_dict['message'][i] = row[' message']
+    for line in csvfile:
+        stream_raw.append(line.strip())
         
-df_stream = pd.DataFrame.from_dict(stream_dict)
-df_stream = df_stream[['time','id1','id2','amount','message']]
+df_stream = pd.DataFrame(stream_raw, columns = ['raw'])
+
+## USE REGEX to parse out - everything before first comma is time, second comma is id1 and so on
+## able to pick up messages with commas in them since it picks up all leftover characters at end of line
+df_stream['time'] = df_stream['raw'].str.extract('^(.+?),', expand=True)
+df_stream['id1'] = df_stream['raw'].str.extract('^[^,]*,([^,]*),', expand=True)
+df_stream['id2'] = df_stream['raw'].str.extract('^[^,]*,[^,]*,([^,]*),', expand=True)
+df_stream['amount'] = df_stream['raw'].str.extract('^[^,]*,[^,]*,[^,]*,([^,]*),', expand=True)
+df_stream['message'] = df_stream['raw'].str.extract('^[^,]*,[^,]*,[^,]*,[^,]*,(.*$)', expand=True)
+
+#can get rid of raw data now that we've parsed everything
+df_stream = df_stream.drop('raw', 1)
+df_stream = df_stream.drop(0, 0) #drop header row
 
 
 ## create output columns
@@ -284,3 +284,5 @@ file_3 = input_dir + 'output3.txt'
 df_stream['test1'].to_csv(file_1, index=False)
 df_stream['test2'].to_csv(file_2, index=False)
 df_stream['test3'].to_csv(file_3, index=False)
+
+print('Saved output successfully to paymo_output')
