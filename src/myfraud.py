@@ -15,7 +15,7 @@ import numpy as np
 from user_class import User, find_new_friends
 
 ## Paths to data files
-input_dir = 'paymo_input/'
+input_dir = '../paymo_input/'
 batch_file = 'batch_payment.csv'
 stream_file = 'stream_payment.csv'
 batch_path = input_dir + batch_file
@@ -27,6 +27,7 @@ stream_path = input_dir + stream_file
 ## best solution likely involves regular expressions, but not analyzing messages for the time being anyway
 
 #takes about 30 seconds to load the 3 million lines each of batch_payment and stream_payment on my macbook pro.
+print('Loading into Pandas...')
 
 batch_dict = {}
 batch_dict['time'] = {}
@@ -56,12 +57,14 @@ partners_1 = {}
 partners_2 = {}
 
 
+print('Finding all transaction partners...')
+
 ## find all transactions where user <user_id> was giver, then find list of partners in those transactions
 for user_id,transactions in givers:
     
-    #store list of all transaction partners as numpy array
+    #store list of all transaction partners as list (easiest type to extend later)
     try:
-        partners_1[int(user_id)] = np.array(givers.get_group(user_id)['id2'].astype(int))
+        partners_1[int(user_id)] = list(givers.get_group(user_id)['id2'].astype(int))
    
     #some lines of batch_payment.txt and stream_payment.txt are off - omit malformed entries
     except (KeyError, ValueError) as BadLine:
@@ -70,13 +73,14 @@ for user_id,transactions in givers:
 ## same as before for all transactions where <user_id> was receiver
 for user_id,transactions in receivers:
     
-    #store list of all transaction partners as numpy array
+    #store list of all transaction partners as list (easiest type to extend later)
     try: 
-        partners_2[int(user_id)] = np.array(givers.get_group(user_id)['id1'].astype(int))
+        partners_2[int(user_id)] = list(receivers.get_group(user_id)['id1'].astype(int))
         
     #some lines of batch_payment.txt and stream_payment.txt are off - omit malformed entries
     except (KeyError, ValueError) as BadLine:
         print("Skipping invalid key:",user_id)
+
 
 ## it's possible that some users only show up as givers and others only as receivers - combine to master list of all IDs
 ## in actuality for the provided batch_payment.txt all users show up as givers at least once, but not safe to assume
@@ -269,7 +273,7 @@ print(df_stream['test3'].value_counts())
 
 
 ## OUTPUT TO TEXT FILE ## 
-input_dir = 'paymo_output/'
+input_dir = '../paymo_output/'
 file_1 = input_dir + 'output1.txt'
 file_2 = input_dir + 'output2.txt'
 file_3 = input_dir + 'output3.txt'
