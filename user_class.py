@@ -61,4 +61,3 @@ def find_new_friends(user_list, current_user, new_tier):
     new_friends = [ x for x in tentative_new if x not in existing_friends ]
     
     return new_friends
-        
