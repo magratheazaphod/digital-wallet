@@ -27,7 +27,7 @@ stream_path = input_dir + stream_file
 ## best solution likely involves regular expressions, but not analyzing messages for the time being anyway
 
 #takes about 30 seconds to load the 3 million lines each of batch_payment and stream_payment on my macbook pro.
-print('Loading into Pandas...')
+print('Loading batch_payment.csv into Pandas...')
 
 batch_dict = {}
 batch_dict['time'] = {}
@@ -220,6 +220,8 @@ def test3(id1,id2):
     return 'unverified'
 
 ## Now load in second data set - this time we choose to flag transactions as verified or unverified.
+print('Loading stream_payment.csv into Pandas...')
+
 stream_dict = {}
 stream_dict['time'] = {}
 stream_dict['id1'] = {}
@@ -273,11 +275,12 @@ print(df_stream['test3'].value_counts())
 
 
 ## OUTPUT TO TEXT FILE ## 
-input_dir = '../paymo_output/'
+input_dir = 'paymo_output/'
 file_1 = input_dir + 'output1.txt'
 file_2 = input_dir + 'output2.txt'
 file_3 = input_dir + 'output3.txt'
 
+## overwrites whatever is in the file by default
 df_stream['test1'].to_csv(file_1, index=False)
 df_stream['test2'].to_csv(file_2, index=False)
 df_stream['test3'].to_csv(file_3, index=False)
