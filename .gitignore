@@ -1,3 +1,4 @@
+paymo_output/*
 __pycache*
 paymo_input/*
 insight_testsuite/temp
