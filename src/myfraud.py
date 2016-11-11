@@ -25,6 +25,8 @@ stream_path = input_dir + stream_file
 ## Difficult to parse messages section because it's possible for it to use commas
 ## Below, figured out solution - import raw string, then use regular expressions to pick out each component
 ## we choose everything after the fourth comma to be the message
+print('Loading data from batch_payment.csv')
+
 batch_raw = []
 
 with open(batch_path, newline='') as csvfile:
